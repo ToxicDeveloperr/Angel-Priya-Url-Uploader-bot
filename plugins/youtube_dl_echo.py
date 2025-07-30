@@ -39,13 +39,7 @@ from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton, Message
 from pyrogram.errors import UserNotParticipant
 from pyrogram import Client, enums
 
-## Try to import lk21 safely, avoid import-time crash ##
-try:
-    import lk21
-    LK21_AVAILABLE = True
-except Exception as e:
-    logger.error(f"Failed to import lk21 library: {e}")
-    LK21_AVAILABLE = False
+# Removed lk21 import and bypass-related code completely
 
 # Simple URL validation function
 def is_valid_url(url):
@@ -69,129 +63,10 @@ async def echo(bot: Client, update: Message):
     youtube_dl_password = None
     file_name = None
     folder = f'./lk21/{update.from_user.id}/'
-    bypass = ['zippyshare', 'hxfile', 'mediafire', 'anonfiles', 'antfiles']
 
-    ext = tldextract.extract(url)
+    # bypass logic removed - no lk21 usage
 
-    # Process bypass URLs only if lk21 is available
-    if LK21_AVAILABLE and ext.domain in bypass:
-        pablo = await update.reply_text('LK21 link detected')
-        time.sleep(2.5)
-        if os.path.isdir(folder):
-            await update.reply_text("Don't spam, wait till your previous task done.")
-            await pablo.delete()
-            return
-        os.makedirs(folder)
-        await pablo.edit_text('Downloading...')
-
-        bypasser = lk21.Bypass()
-        # Safe bypass call with try-except
-        try:
-            if not is_valid_url(url):
-                await update.reply_text("Invalid URL format detected. Please send a valid HTTP/HTTPS URL.")
-                await pablo.delete()
-                return
-
-            xurl = bypasser.bypass_url(url)
-        except Exception as e:
-            logger.error(f"Error in lk21 bypass_url: {e}")
-            await update.reply_text(f"URL parsing error: {e}")
-            await pablo.delete()
-            return
-
-        if ' | ' in url:
-            url_parts = url.split(' | ')
-            url = url_parts[0]
-            file_name = url_parts[1]
-        else:
-            if xurl.find('/'):
-                urlname = xurl.rsplit('/', 1)[1]
-            file_name = urllib.parse.unquote(urlname)
-            if '+' in file_name:
-                file_name = file_name.replace('+', ' ')
-
-        dldir = f'{folder}{file_name}'
-
-        try:
-            r = requests.get(xurl, allow_redirects=True, timeout=60)
-            r.raise_for_status()
-            with open(dldir, 'wb') as f:
-                f.write(r.content)
-        except Exception as e:
-            logger.error(f"Error downloading file: {e}")
-            await update.reply_text(f"Error downloading file: {e}")
-            await pablo.delete()
-            shutil.rmtree(folder, ignore_errors=True)
-            return
-
-        try:
-            file = filetype.guess(dldir)
-            xfiletype = file.mime
-        except Exception:
-            xfiletype = file_name
-
-        duration = None
-        if xfiletype in ['video/mp4', 'video/x-matroska', 'video/webm', 'audio/mpeg']:
-            metadata = extractMetadata(createParser(dldir))
-            if metadata is not None:
-                if metadata.has("duration"):
-                    duration = metadata.get('duration').seconds
-
-        await pablo.edit_text('Uploading...')
-        start_time = time.time()
-
-        try:
-            if xfiletype in ['video/mp4', 'video/x-matroska', 'video/webm']:
-                await bot.send_video(
-                    chat_id=update.chat.id,
-                    video=dldir,
-                    caption=file_name,
-                    duration=duration,
-                    reply_to_message_id=update.id,
-                    progress=progress_for_pyrogram,
-                    progress_args=(
-                        Translation.UPLOAD_START,
-                        pablo,
-                        start_time
-                    )
-                )
-            elif xfiletype == 'audio/mpeg':
-                await bot.send_audio(
-                    chat_id=update.chat.id,
-                    audio=dldir,
-                    caption=file_name,
-                    duration=duration,
-                    reply_to_message_id=update.id,
-                    progress=progress_for_pyrogram,
-                    progress_args=(
-                        Translation.UPLOAD_START,
-                        pablo,
-                        start_time
-                    )
-                )
-            else:
-                await bot.send_document(
-                    chat_id=update.chat.id,
-                    document=dldir,
-                    caption=file_name,
-                    reply_to_message_id=update.id,
-                    progress=progress_for_pyrogram,
-                    progress_args=(
-                        Translation.UPLOAD_START,
-                        pablo,
-                        start_time
-                    )
-                )
-        except Exception as e:
-            logger.error(f"Error sending file to Telegram: {e}")
-            await update.reply_text(f"Error uploading file: {e}")
-        finally:
-            await pablo.delete()
-            shutil.rmtree(folder, ignore_errors=True)
-        return
-
-    # Continue the rest of your existing code here for youtube-dl logic...
-    # Add URL validation before calling yt-dlp command as well
+    # Proceed directly to youtube-dl/yt-dlp handling block
 
     if "|" in url:
         url_parts = url.split("|")
@@ -277,5 +152,5 @@ async def echo(bot: Client, update: Message):
         )
         return False
 
-    # Rest of yt-dlp output processing code remains unchanged ...
+    # You can continue with rest of yt-dlp processing here if needed
 
