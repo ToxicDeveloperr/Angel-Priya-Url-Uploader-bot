@@ -1,13 +1,16 @@
-#Thank you LazyDeveloper for helping developers in this journey !
-#Must Subscribe On YouTube @LazyDeveloperr 
+from flask import Flask, jsonify
 
-from flask import Flask
 app = Flask(__name__)
 
 @app.route('/')
-def hello_world():
-    return '@LazyDeveloper'
+def home():
+    return "Hello from Tech J"
 
+@app.route('/health')
+def health():
+    # Health check endpoint returns 200 OK with simple json
+    return jsonify(status="ok")
 
 if __name__ == "__main__":
-    app.run()
+    # Development server with debug mode off for safety
+    app.run(host="0.0.0.0", port=8080, debug=False)
