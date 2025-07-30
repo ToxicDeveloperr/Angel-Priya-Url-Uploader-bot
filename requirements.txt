@@ -8,7 +8,7 @@ requests
 tgcrypto
 yt-dlp
 olefile
-lk21
+lk21==0.7.9
 filetype
 tldextract
 Flask
